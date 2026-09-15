@@ -37,9 +37,16 @@ export function Square({
       onFocus={() => setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
       className={cn(
-        "absolute top-0 left-0 box-border border border-black transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none dark:border-white/5",
+        "absolute top-0 left-0 box-border border border-black transition-all duration-150 ease-out focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none dark:border-white/5",
         isValidMove ? "cursor-pointer" : "cursor-not-allowed",
-        isHovered ? hoverColor : isCheckerLight ? "bg-white" : "bg-black",
+        isHovered
+          ? cn(
+              hoverColor,
+              "border-transparent shadow-[inset_0_4px_10px_rgba(0,0,0,0.55)] brightness-90",
+            )
+          : isCheckerLight
+            ? "bg-white"
+            : "bg-black",
       )}
       style={{
         width: CELL_SIZE,
