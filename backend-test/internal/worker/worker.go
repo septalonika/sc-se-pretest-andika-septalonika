@@ -2,12 +2,7 @@ package worker
 
 import "sync"
 
-// SumEvenChunk is a single worker. It sums the even numbers in its own
-// sub-slice and sends exactly one value on results.
-//
-// localSum is a variable private to this goroutine: no mutex, no atomic,
-// no shared counter. Workers never touch each other's memory, so there is
-// nothing to race on and no cache-line contention between cores.
+// SumEvenChunk sums the even numbers in data and sends the result on results.
 func SumEvenChunk(data []int, results chan<- int64, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -18,12 +13,10 @@ func SumEvenChunk(data []int, results chan<- int64, wg *sync.WaitGroup) {
 		}
 	}
 
-	// results is buffered with one slot per worker, so this send never blocks.
 	results <- localSum
 }
 
-// SumEvenSequential is the single-goroutine baseline. Tests use it as a
-// reference and the benchmark compares against it.
+// SumEvenSequential is the single-goroutine baseline.
 func SumEvenSequential(data []int) int64 {
 	var sum int64
 	for _, num := range data {
@@ -37,14 +30,12 @@ func SumEvenSequential(data []int) int64 {
 // SumEvenConcurrent splits data into numWorkers contiguous chunks, sums the
 // even numbers of each chunk in its own goroutine, and returns the total.
 func SumEvenConcurrent(data []int, numWorkers int) int64 {
-	// Guards: nothing to do, or a nonsensical worker count.
 	if len(data) == 0 {
 		return 0
 	}
 	if numWorkers < 1 {
 		numWorkers = 1
 	}
-	// More workers than elements would give chunkSize == 0 and empty chunks.
 	if numWorkers > len(data) {
 		numWorkers = len(data)
 	}
@@ -64,7 +55,7 @@ func SumEvenConcurrent(data []int, numWorkers int) int64 {
 			end = len(data)
 		}
 
-		wg.Add(1) // in the parent, BEFORE starting the goroutine
+		wg.Add(1)
 		go SumEvenChunk(data[start:end], results, &wg)
 	}
 
