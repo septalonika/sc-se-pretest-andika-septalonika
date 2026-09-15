@@ -35,3 +35,29 @@ export function isValidMove(from: Position, to: Position, cols: number, rows: nu
 
   return (dx === 1 && dy === 2) || (dx === 2 && dy === 1)
 }
+
+/**
+ * Decomposes one knight move into unit orthogonal hops for animation.
+ * The two deltas of a legal knight move are always {1, 2} — never equal — so
+ * "traverse the 2-magnitude axis first, then the 1-magnitude axis" is a
+ * tie-break-free rule: exactly one axis always qualifies as "the long leg".
+ * Falls back to a direct two-point path for any non-knight displacement
+ * (e.g. a board-reset snap), where there is no L-shape to decompose.
+ */
+export function getKnightPath(from: Position, to: Position): Position[] {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const absDx = Math.abs(dx)
+  const absDy = Math.abs(dy)
+
+  const isKnightShape = (absDx === 1 && absDy === 2) || (absDx === 2 && absDy === 1)
+  if (!isKnightShape) return [from, to]
+
+  const stepX = Math.sign(dx)
+  const stepY = Math.sign(dy)
+
+  if (absDx === 2) {
+    return [from, { x: from.x + stepX, y: from.y }, { x: to.x, y: from.y }, to]
+  }
+  return [from, { x: from.x, y: from.y + stepY }, { x: from.x, y: to.y }, to]
+}

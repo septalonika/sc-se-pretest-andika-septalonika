@@ -38,6 +38,7 @@ export function Square({
       onBlur={() => setIsHovered(false)}
       className={cn(
         "absolute top-0 left-0 box-border border border-black transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none dark:border-white/5",
+        isValidMove ? "cursor-pointer" : "cursor-not-allowed",
         isHovered ? hoverColor : isCheckerLight ? "bg-white" : "bg-black",
       )}
       style={{
