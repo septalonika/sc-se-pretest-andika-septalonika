@@ -30,13 +30,29 @@ Run a single test file: `npx vitest run src/lib/knight.test.ts`
 
 **Virtualized grid.** A 100×100 board is 10,000 cells — too many DOM nodes to render unconditionally. `ChessBoard` composes two `@tanstack/react-virtual` instances (one per axis) over a single scroll container, so only the visible cells (plus overscan) are mounted at any time.
 
-**Knight as an overlay, not a cell child.** Because virtualized cells can unmount, a knight rendered inside its square would have no mounted animation target when moving off-screen — it would snap instead of animate. Instead the knight is a single absolutely-positioned `motion.div`, a sibling of the cell layer, driven by `animate={{ x: knight.x * CELL_SIZE, y: knight.y * CELL_SIZE }}`. It's `pointer-events-none` so clicks pass through to the square underneath.
+**Knight as an overlay, not a cell child.** Because virtualized cells can unmount, a knight rendered inside its square would have no mounted animation target when moving off-screen — it would snap instead of animate. Instead the knight is a single absolutely-positioned `motion.div`, a sibling of the cell layer, animated with `motion/react` keyframes as it hops across the board (see below). It's `pointer-events-none` so clicks pass through to the square underneath.
 
-Move validation (`src/lib/knight.ts`) is a constant-time check per square — no per-render allocation of a legal-moves set. Hover state lives locally in `Square`, never in the Zustand store, so hovering never re-renders the whole grid.
+Hover state lives locally in `Square`, never in the Zustand store, so hovering never re-renders the whole grid.
+
+## Knight movement logic (`src/lib/knight.ts`)
+
+All pure functions, no React — trivially unit-tested in `knight.test.ts`.
+
+- **`isValidMove(from, to, cols, rows)`** — is `to` one of the 8 knight L-shapes from `from`, and in bounds? Constant-time: compares `{|dx|, |dy|}` against `{1, 2}`, no per-render allocation of a legal-moves set.
+- **`getValidMoves(from, cols, rows)`** — all 8 offsets, filtered to in-bounds. Used for tests/debugging, not per-square rendering.
+- **`getKnightPath(from, to)`** — decomposes one knight move into unit orthogonal hops, so the piece visibly steps square-by-square along one leg of the L, then the other, instead of sliding diagonally across the board.
+
+  A knight's move always has deltas `{1, 2}` on the two axes — never equal — so exactly one axis is always "the long leg" (magnitude 2) and one is "the short leg" (magnitude 1). The rule: **traverse the long leg first, then the short leg.** E.g. from A1 `(0,0)` to C2 `(2,1)`: `x` is the long leg (Δ2), so the path is A1 → B1 → C1 → C2, not A1 → A2 → B2 → C2.
+
+  This rule is deterministic with no tie-break needed — the {1, 2} asymmetry guarantees a unique "long leg" every time — and it matches how an L-shaped move visually reads: a two-square leap, then a one-square correction to the side.
+
+  For any non-knight displacement (e.g. snapping the piece back to `(0, 0)` when the board is regenerated), there's no L-shape to decompose, so it falls back to a direct two-point path.
+
+  `Knight.tsx` calls this on every position change and animates through the returned waypoints with `motion`'s keyframe arrays (`animate={{ x: [...], y: [...] }}`), so each hop is a fixed-duration step rather than one continuous glide.
 
 ## Tests
 
-- `src/lib/knight.test.ts` — pure move-validation logic
+- `src/lib/knight.test.ts` — pure move-validation and path-decomposition logic
 - `src/store/useBoardStore.test.ts` — board resize, move, reset
 - `src/components/organisms/ChessBoard.test.tsx`, `src/components/molecules/BoardControlForm.test.tsx` — interaction tests
 
