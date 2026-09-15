@@ -1,6 +1,8 @@
+[← Back to main README](../README.md)
+
 # SQL Test — SIPERPUS
 
-Database deliverable for SIPERPUS (Sistem Informasi Perpustakaan). See [`../../database-test-erd.MD`](../../database-test-erd.MD) for full design rationale.
+Database deliverable for SIPERPUS (Sistem Informasi Perpustakaan).
 
 ## ERD
 
