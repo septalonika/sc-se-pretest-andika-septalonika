@@ -1,0 +1,117 @@
+-----------------------------------------------------------
+ Algoritma Mencari Nilai Terbesar
+-----------------------------------------------------------
+
+FUNCTION bubbleSort(list):
+    SET sorted TO EMPTY ARRAY
+    FOR i FROM 0 TO (LENGTH(list) - 1) DO
+        APPEND list[i] TO sorted
+    END FOR
+
+    SET n TO LENGTH(sorted)
+    FOR i FROM 0 TO (n - 1) DO
+        FOR j FROM 0 TO (n - 2) DO
+            IF sorted[j] > sorted[j + 1] THEN
+                SET temp TO sorted[j]
+                SET sorted[j] TO sorted[j + 1]
+                SET sorted[j + 1] TO temp
+            END IF
+        END FOR
+    END FOR
+
+    RETURN sorted
+END FUNCTION
+
+
+FUNCTION findMaxInMin(arr, k):
+    // Validasi parameter input
+    IF arr IS EMPTY OR k <= 0 OR k > LENGTH(arr) THEN
+        RETURN null
+    END IF
+
+    // Ambil dan kumpulkan semua sub-array sepanjang $k$ elemen dari array utama.
+    SET subsets TO EMPTY ARRAY
+    FOR i FROM 0 TO (LENGTH(arr) - k) DO
+        SET subset TO EMPTY ARRAY
+        FOR j FROM i TO (i + k - 1) DO
+            APPEND arr[j] TO subset
+        END FOR
+        APPEND subset TO subsets
+    END FOR
+
+    // Cari nilai minimum tiap subset dengan sorting
+    SET minValues TO EMPTY ARRAY
+    FOR EACH subset IN subsets DO
+        SET sortedSubset TO bubbleSort(subset)
+        APPEND sortedSubset[0] TO minValues
+    END FOR
+
+    // Cari nilai maksimum dengan sorting seluruh minValues
+    SET sortedMins TO bubbleSort(minValues)
+    SET maxOfMin TO sortedMins[LENGTH(sortedMins) - 1]
+
+    // Kembalikan hasil
+    RETURN maxOfMin
+END FUNCTION
+
+-----------------------------------------------------------
+ Penjelasan step by step: arr = [8,1,6,3,66,1,8,5], k = 3
+-----------------------------------------------------------
+Panjang arr = 8, k = 3.
+Jumlah subset = 8 - 3 + 1 = 6, jadi i berjalan dari 0 sampai 5.
+
+Langkah 1: bangun subset
+Setiap i mengambil 3 elemen, dari arr[i] sampai arr[i+2].
+
+  i=0  index 0..2  -> [8,1,6]
+  i=1  index 1..3  -> [1,6,3]
+  i=2  index 2..4  -> [6,3,66]
+  i=3  index 3..5  -> [3,66,1]
+  i=4  index 4..6  -> [66,1,8]
+  i=5  index 5..7  -> [1,8,5]
+
+Langkah 2: cari minimum tiap subset
+Subset di-copy, lalu diurutkan ascending pakai bubble sort.
+Setelah urut, nilai terkecil ada di index 0.
+
+Contoh lengkap untuk subset [8,1,6]:
+  putaran 1:
+    8 vs 1 -> 8 > 1, tukar     -> [1,8,6]
+    8 vs 6 -> 8 > 6, tukar     -> [1,6,8]
+  putaran 2:
+    1 vs 6 -> tidak tukar
+    6 vs 8 -> tidak tukar
+  putaran 3:
+    tidak ada tukar
+  hasil [1,6,8], index 0 = 1
+
+Subset lain diproses dengan cara yang sama:
+  [8,1,6]   -> [1,6,8]   -> min 1
+  [1,6,3]   -> [1,3,6]   -> min 1
+  [6,3,66]  -> [3,6,66]  -> min 3
+  [3,66,1]  -> [1,3,66]  -> min 1
+  [66,1,8]  -> [1,8,66]  -> min 1
+  [1,8,5]   -> [1,5,8]   -> min 1
+
+  minValues = [1,1,3,1,1,1]
+
+Hanya [6,3,66] yang tidak mengandung angka 1,
+karena itu minimumnya paling besar.
+
+Langkah 3: cari nilai terbesar dari minValues
+minValues di-copy, lalu diurutkan ascending pakai bubble sort.
+Setelah urut, nilai terbesar ada di index terakhir.
+
+  putaran 1:
+    1 vs 1 -> tidak tukar      -> [1,1,3,1,1,1]
+    1 vs 3 -> tidak tukar      -> [1,1,3,1,1,1]
+    3 vs 1 -> tukar            -> [1,1,1,3,1,1]
+    3 vs 1 -> tukar            -> [1,1,1,1,3,1]
+    3 vs 1 -> tukar            -> [1,1,1,1,1,3]
+  putaran 2 sampai 6:
+    tidak ada tukar, array sudah urut
+
+  sortedMins = [1,1,1,1,1,3]
+  index terakhir (5) = 3
+
+Langkah 4: return 3
