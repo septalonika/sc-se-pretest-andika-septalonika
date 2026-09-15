@@ -1,9 +1,9 @@
+[← Back to main README](../README.md)
+
 # Concurrent Even Sum
 
 Sums the even numbers of a 10,000,000-element `[]int` using one goroutine per CPU core
 (`runtime.NumCPU()`), a buffered channel for results, and `sync.WaitGroup` for shutdown.
-
-See [`../../PLAN-test-go.MD`](../../PLAN-test-go.MD) for the full design doc.
 
 ## Requirements
 

@@ -1,8 +1,8 @@
+[← Back to main README](../README.md)
+
 # Chess Lonely Knight
 
 A single-page app: a chessboard of user-defined size (1–100 × 1–100) holding one knight. Hover a square to see if it's a legal knight move (green) or not (red), click a legal square to move there.
-
-See [`../../PLAN-test-fe.MD`](../../PLAN-test-fe.MD) for the full design doc.
 
 ## Stack
 
